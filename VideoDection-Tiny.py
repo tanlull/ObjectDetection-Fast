@@ -5,18 +5,23 @@ import numpy as np
 import os.path
 
 # Initialize the parameters
-confThreshold = 0.5  #Confidence threshold
-nmsThreshold = 0.4   #Non-maximum suppression threshold
+confThreshold = 0.3  #Confidence threshold
+nmsThreshold = 0.4   #Non-maximum suppression threshold 0.4
 inpWidth = 412       #Width of network's input image
 inpHeight = 412      #Height of network's input image
+showBG = False      # show / Noit show image background
+bgColor = 100
 
-
+Drawframe = ""      # Frame to be draw
 #parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
 #parser.add_argument('--image', help='Path to image file.')
 #parser.add_argument('--video', help='Path to video file.')
 #args = parser.parse_args()
-       
-args = "run.mp4"
+#outputFile = "yolo_out_py.avi"
+
+rtspStream = 'rtsp://192.168.1.3:554/user=admin&password=&channel=1&stream=0.sdp?real_stream'
+#rtspStream = 'rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov'
+#args = "run.mp4"
     
 # Load names of classes
 classesFile = "coco.names";
@@ -42,21 +47,33 @@ def getOutputsNames(net):
 
 # Draw the predicted bounding box
 def drawPred(classId, conf, left, top, right, bottom):
+    global Drawframe
+    Drawframe = frame
+
+    if showBG==False:
+        global bgColor
+        # Create black color image
+        height,width,depth = frame.shape
+        blackFrame = np.zeros([height,width,3],dtype=np.uint8) 
+        blackFrame.fill(bgColor)
+        Drawframe = blackFrame
+
     # Draw a bounding box.
-    cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
+    cv.rectangle(Drawframe, (left, top), (right, bottom), (255, 178, 50), 3)
     
     label = '%.2f' % conf
         
     # Get the label for the class name and its confidence
     if classes:
         assert(classId < len(classes))
-        label = '%s:%s' % (classes[classId], label)
+        label = '%s : %s' % (classes[classId], label)
 
     #Display the label at the top of the bounding box
-    labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+    labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_TRIPLEX, 0.5, 1)
     top = max(top, labelSize[1])
-    cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine), (255, 255, 255), cv.FILLED)
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1)
+    #Text Blackground
+    cv.rectangle(Drawframe, (left, top - round(1.8*labelSize[1])), (left + round(1.8*labelSize[0]), top + baseLine), (0, 0, 0), cv.FILLED)
+    cv.putText(Drawframe, label, (left, top), cv.FONT_HERSHEY_TRIPLEX, 0.9, (0,255,0), 2)
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(frame, outs):
@@ -99,14 +116,14 @@ def postprocess(frame, outs):
         height = box[3]
         drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
 
+
+
+
 # Process inputs
 winName = 'Fall Detection'
 cv.namedWindow(winName, cv.WINDOW_NORMAL)
 
-#outputFile = "yolo_out_py.avi"
 
-rtspStream = 'rtsp://192.168.1.3:554/user=admin&password=&channel=1&stream=0.sdp?real_stream'
-#rtspStream = 'rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov'
 
 ##Camera
 cap = cv.VideoCapture(rtspStream)
@@ -115,6 +132,8 @@ cap = cv.VideoCapture(rtspStream)
 # Get the video writer initialized to save the output video
 
 #vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M','J','P','G'), 30, (round(cap.get(cv.CAP_PROP_FRAME_WIDTH)),round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
+
+from matplotlib import pyplot as plt
 
 while cv.waitKey(1) < 0:
     
@@ -137,6 +156,7 @@ while cv.waitKey(1) < 0:
     # Runs the forward pass to get output of the output layers
     outs = net.forward(getOutputsNames(net))
 
+    
     # Remove the bounding boxes with low confidence
     postprocess(frame, outs)
 
@@ -146,9 +166,10 @@ while cv.waitKey(1) < 0:
     # Show Frame rate at the top lef video
     label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
     #label = cv.
-    cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+
+    cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0))
 
     #vid_writer.write(frame.astype(np.uint8))
 
-    cv.imshow(winName, frame)
+    cv.imshow(winName, Drawframe)
 
