@@ -10,18 +10,11 @@ nmsThreshold = 0.4   #Non-maximum suppression threshold 0.4
 inpWidth = 412       #Width of network's input image
 inpHeight = 412      #Height of network's input image
 showBG = False      # show / Noit show image background
-bgColor = 100
-
+bgColor = 100       # Blackground image color
 Drawframe = ""      # Frame to be draw
-#parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-#parser.add_argument('--image', help='Path to image file.')
-#parser.add_argument('--video', help='Path to video file.')
-#args = parser.parse_args()
-#outputFile = "yolo_out_py.avi"
+
 
 rtspStream = 'rtsp://192.168.1.3:554/user=admin&password=&channel=1&stream=0.sdp?real_stream'
-#rtspStream = 'rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov'
-#args = "run.mp4"
     
 # Load names of classes
 classesFile = "coco.names";
