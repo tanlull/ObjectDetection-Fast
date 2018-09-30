@@ -27,8 +27,11 @@ with open(classesFile, 'rt') as f:
     classes = f.read().rstrip('\n').split('\n')
 
 # Give the configuration and weight files for the model and load the network using them.
-modelConfiguration = "yolov3.cfg";
-modelWeights = "yolov3.weights";
+# modelConfiguration = "yolov3.cfg";
+# modelWeights = "yolov3.weights";
+
+modelConfiguration = "yolov3-tiny.cfg";
+modelWeights = "yolov3-tiny.weights";
 
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -104,7 +107,7 @@ def postprocess(frame, outs):
 winName = 'Deep learning object detection in OpenCV'
 cv.namedWindow(winName, cv.WINDOW_NORMAL)
 
-outputFile = "yolo_out_py.avi"
+outputFile = "yolo_video_out.avi"
 if (args.image):
     # Open the image file
     if not os.path.isfile(args.image):
